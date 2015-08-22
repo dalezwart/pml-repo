@@ -111,15 +111,15 @@ if (!file.exists(testingDataFile)) {
 <p>After downloading the data from the data source, we can read the two csv files into two data frames.</p>
 <pre class="r"><code>trainingRawData &lt;- read.csv(&quot;data/pml-training.csv&quot;)
 testingRawData &lt;- read.csv(&quot;data/pml-testing.csv&quot;)
-dim(trainingRawData)</code></pre>
+dim(trainingRawData) #retrieve the dimensions of trainingRawData</code></pre>
 <pre><code>## [1] 19622   160</code></pre>
-<pre class="r"><code>dim(testingRawData)</code></pre>
+<pre class="r"><code>dim(testingRawData) # retrieve the dimensions of testing RawData</code></pre>
 <pre><code>## [1]  20 160</code></pre>
-<p>The training data set contains 19622 observations and 160 variables, while the testing data set contains 20 observations and 160 variables. The “classe” variable in the training set is the outcome to predict.</p>
+<p>The training data set contains 19622 observations in 160 variables. The testing data set contains 20 observations in 160 variables. The “classe” variable in the training set is the outcome for us to predict.</p>
 </div>
 <div id="clean-the-data" class="section level3">
 <h3>Clean the data</h3>
-<p>Identify incomplete, incorrect, inaccurate, and meaningless variables.</p>
+<p>We use complete.cases to return a logical vector indicating which cases are complete, i.e., have no missing values.</p>
 <pre class="r"><code>sum(complete.cases(trainingRawData))</code></pre>
 <pre><code>## [1] 406</code></pre>
 <p>First, we remove columns that contain NA missing values.</p>
@@ -139,15 +139,15 @@ testCleaned &lt;- testingRawData[, sapply(testingRawData, is.numeric)]</code></p
 <div id="slice-the-data" class="section level3">
 <h3>Slice the data</h3>
 <p>Then, we can split the cleaned training set into a pure training data set (70%) and a validation data set (30%). We will use the validation data set to conduct cross validation in future steps.</p>
-<pre class="r"><code>set.seed(22519) # For reproducibile purpose
-inTrain &lt;- createDataPartition(trainCleaned$classe, p=0.70, list=F)
+<pre class="r"><code>set.seed(22519) # Use set.seed to ensure the frame is reproducible with the same data
+inTrain &lt;- createDataPartition(trainCleaned$classe, p=0.70, list=F) #partition the data to 70% training and 30% test data
 trainingData &lt;- trainCleaned[inTrain, ]
 testingData &lt;- trainCleaned[-inTrain, ]</code></pre>
 </div>
 </div>
 <div id="data-modeling" class="section level2">
 <h2>Data Modeling</h2>
-<p>We fit a predictive model for activity recognition using <strong>Random Forest</strong> algorithm because it automatically selects important variables and is robust to correlated covariates &amp; outliers in general. We will use <strong>5-fold cross validation</strong> when applying the algorithm.</p>
+<p>We use the train function from caret to estimate model performance from a training set We fit a predictive model for activity recognition using <strong>Random Forest</strong> algorithm because it automatically selects important variables and is robust to correlated covariates &amp; outliers in general. We will use <strong>5-fold cross validation</strong> when applying the algorithm.</p>
 <pre class="r"><code>controlRf &lt;- trainControl(method=&quot;cv&quot;, 5)
 modelRf &lt;- train(classe ~ ., data=trainingData, method=&quot;rf&quot;, trControl=controlRf, ntree=250)
 modelRf</code></pre>
@@ -169,7 +169,7 @@ modelRf</code></pre>
 ## 
 ## Accuracy was used to select the optimal model using  the largest value.
 ## The final value used for the model was mtry = 27.</code></pre>
-<p>Then, we estimate the performance of the model on the validation data set.</p>
+<p>We use the predict function from caret to to generate predictions for new samples from train. The function confusionMatrix is then used to compute various summaries for classification models on the validation data set.</p>
 <pre class="r"><code>predictRf &lt;- predict(modelRf, testingData)
 confusionMatrix(testingData$classe, predictRf)</code></pre>
 <pre><code>## Confusion Matrix and Statistics

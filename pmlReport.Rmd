@@ -50,13 +50,13 @@ After downloading the data from the data source, we can read the two csv files i
 ```{r, cache = T}
 trainingRawData <- read.csv("data/pml-training.csv")
 testingRawData <- read.csv("data/pml-testing.csv")
-dim(trainingRawData)
-dim(testingRawData)
+dim(trainingRawData) #retrieve the dimensions of trainingRawData
+dim(testingRawData) # retrieve the dimensions of testing RawData
 ```
-The training data set contains 19622 observations and 160 variables, while the testing data set contains 20 observations and 160 variables. The "classe" variable in the training set is the outcome to predict. 
+The training data set contains 19622 observations in 160 variables. The testing data set contains 20 observations in 160 variables. The "classe" variable in the training set is the outcome for us to predict. 
 
 ### Clean the data
-Identify incomplete, incorrect, inaccurate, and meaningless variables.
+We use complete.cases to return a logical vector indicating which cases are complete, i.e., have no missing values.
 ```{r, cache = T}
 sum(complete.cases(trainingRawData))
 ```
@@ -82,19 +82,20 @@ Now, the cleaned training data set contains 19622 observations and 53 variables,
 Then, we can split the cleaned training set into a pure training data set (70%) and a validation data set (30%). We will use the validation data set to conduct cross validation in future steps.  
 ```{r, cache = T}
 set.seed(22519) # Use set.seed to ensure the frame is reproducible with the same data
-inTrain <- createDataPartition(trainCleaned$classe, p=0.70, list=F)
+inTrain <- createDataPartition(trainCleaned$classe, p=0.70, list=F) #partition the data to 70% training and 30% test data
 trainingData <- trainCleaned[inTrain, ]
 testingData <- trainCleaned[-inTrain, ]
 ```
 
 ## Data Modeling
+We use the train function from caret to estimate model performance from a training set
 We fit a predictive model for activity recognition using **Random Forest** algorithm because it automatically selects important variables and is robust to correlated covariates & outliers in general. We will use **5-fold cross validation** when applying the algorithm.  
 ```{r, cache = T}
 controlRf <- trainControl(method="cv", 5)
 modelRf <- train(classe ~ ., data=trainingData, method="rf", trControl=controlRf, ntree=250)
 modelRf
 ```
-Then, we estimate the performance of the model on the validation data set.  
+We use the predict function from caret to to generate predictions for new samples from train.  The function confusionMatrix is then used to compute various summaries for classification models on the validation data set.  
 ```{r, cache = T}
 predictRf <- predict(modelRf, testingData)
 confusionMatrix(testingData$classe, predictRf)
