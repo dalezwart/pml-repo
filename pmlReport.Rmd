@@ -46,26 +46,26 @@ if (!file.exists(testingDataFile)) {
 }
 ```  
 ### Read the Data
-After downloading the data from the data source, we can read the two csv files into two data frames.  
+Download the data from the data source then read two csv files into data frames.  
 ```{r, cache = T}
 trainingRawData <- read.csv("data/pml-training.csv")
 testingRawData <- read.csv("data/pml-testing.csv")
 dim(trainingRawData) #retrieve the dimensions of trainingRawData
 dim(testingRawData) # retrieve the dimensions of testing RawData
 ```
-The training data set contains 19622 observations in 160 variables. The testing data set contains 20 observations in 160 variables. The "classe" variable in the training set is the outcome for us to predict. 
+The training data set contains 19622 observations in 160 variables. The testing data set contains 20 observations in 160 variables. A <i>classe</i> variable in the training set is the outcome for prediction. 
 
 ### Clean the data
-We use complete.cases to return a logical vector indicating which cases are complete, i.e., have no missing values.
+Use <i>complete.cases</i> to return a logical vector that indicates which cases are complete. 
 ```{r, cache = T}
 sum(complete.cases(trainingRawData))
 ```
-First, we remove columns that contain NA missing values.
+<b>Step 1.</b> Remove all columns that contain NA values.
 ```{r, cache = T}
 trainingRawData <- trainingRawData[, colSums(is.na(trainingRawData)) == 0] 
 testingRawData <- testingRawData[, colSums(is.na(testingRawData)) == 0] 
 ```  
-Next, we get rid of some columns that do not contribute much to the accelerometer measurements.
+<b>Step 2.</b> Remove columns that contain irrelevant information
 ```{r, cache = T}
 classe <- trainingRawData$classe
 trainRemove <- grepl("^X|timestamp|window", names(trainingRawData))
@@ -76,10 +76,10 @@ testRemove <- grepl("^X|timestamp|window", names(testingRawData))
 testingRawData <- testingRawData[, !testRemove]
 testCleaned <- testingRawData[, sapply(testingRawData, is.numeric)]
 ```
-Now, the cleaned training data set contains 19622 observations and 53 variables, while the testing data set contains 20 observations and 53 variables. The "classe" variable is still in the cleaned training set.
+After cleaning the training data set it now contains 19622 observations and 53 variables.  The  testing data set now contains 20 observations and 53 variables. The <i>classe</i> variable remains in the cleaned training set.
 
 ### Slice the data
-Then, we can split the cleaned training set into a pure training data set (70%) and a validation data set (30%). We will use the validation data set to conduct cross validation in future steps.  
+Split the clean training set into a training data set (70%) and a test data set (30%). The test data set will be used to perform cross validation.  
 ```{r, cache = T}
 set.seed(22519) # Use set.seed to ensure the frame is reproducible with the same data
 inTrain <- createDataPartition(trainCleaned$classe, p=0.70, list=F) #partition the data to 70% training and 30% test data
@@ -88,16 +88,15 @@ testingData <- trainCleaned[-inTrain, ]
 ```
 
 ## Data Modeling
-We use the train function from caret to estimate model performance from a training set
-We fit a predictive model for activity recognition using **Random Forest** algorithm because it automatically selects important variables and is robust to correlated covariates & outliers in general. We will use **5-fold cross validation** when applying the algorithm.  
+The <i>train</i> function from caret will estimate the performance of the model in the training data set.  Fitting a predictive model for activity recognition using **Random Forest** algorithm selects key variables and correlated covariates and outliers. Note the <i>cv</i> method and use of **5-fold cross validation** when running the function.  
 ```{r, cache = T}
-controlRf <- trainControl(method="cv", 5)
-modelRf <- train(classe ~ ., data=trainingData, method="rf", trControl=controlRf, ntree=250)
-modelRf
+controlRandomForest <- trainControl(method="cv", 5)
+testRandomForest <- train(classe ~ ., data=trainingData, method="rf", trControl=controlRandomForest, ntree=250)
+testRandomForest
 ```
-We use the predict function from caret to to generate predictions for new samples from train.  The function confusionMatrix is then used to compute various summaries for classification models on the validation data set.  
+Use the <i>predict</i> function from caret to to generate predictions from the training data set.  Then use the <i>confusionMatrix</i> function to compute summaries for classification models in the validation data set.  
 ```{r, cache = T}
-predictRf <- predict(modelRf, testingData)
+predictRf <- predict(testRandomForest, testingData)
 confusionMatrix(testingData$classe, predictRf)
 ```
 ```{r, cache = T}
@@ -106,23 +105,24 @@ accuracy
 oose <- 1 - as.numeric(confusionMatrix(testingData$classe, predictRf)$overall[1])
 oose
 ```
-So, the estimated accuracy of the model is 99.42% and the estimated out-of-sample error is 0.58%.
+The estimated accuracy of the model indicates 99.42% and the estimated out-of-sample error indicates 0.58%.
 
-## Predicting for Test Data Set
-Now, we apply the model to the original testing data set downloaded from the data source. We remove the `problem_id` column first.  
+## Predict for Test Data Set
+Apply the model to the testing data set downloaded from the data source. Note: remove the `problem_id` column.  
 ```{r, cache = T}
-result <- predict(modelRf, testCleaned[, -length(names(testCleaned))])
+result <- predict(testRandomForest, testCleaned[, -length(names(testCleaned))])
 result
 ```  
 
-## Appendix: Figures
-1. Correlation Matrix Visualization  
+## Appendix - Figures  
+  Figure 1. Correlation Matrix Visualization  
 ```{r, cache = T}
-corrPlot <- cor(trainingData[, -length(names(trainingData))])
-corrplot(corrPlot, method="color")
+corMVplot <- cor(trainingData[, -length(names(trainingData))])
+corrplot(corMVplot, method="color")
 ```
-2. Decision Tree Visualization
+-
+Figure 2. Decision Tree Visualization
 ```{r, cache = T}
-treeModel <- rpart(classe ~ ., data=trainingData, method="class")
-prp(treeModel) # fast plot
+DTVtreeModel <- rpart(classe ~ ., data=trainingData, method="class")
+prp(DTVtreeModel) # fast plot
 ```
