@@ -96,16 +96,16 @@ testRandomForest
 ```
 Use the <i>predict</i> function from caret to to generate predictions from the training data set.  Then use the <i>confusionMatrix</i> function to compute summaries for classification models in the validation data set.  
 ```{r, cache = T}
-predictRf <- predict(testRandomForest, testingData)
-confusionMatrix(testingData$classe, predictRf)
+predictRandomForest <- predict(testRandomForest, testingData)
+confusionMatrix(testingData$classe, predictRandomForest)
 ```
 ```{r, cache = T}
-estimatedAccuracy <- postResample(predictRf, testingData$classe)
+estimatedAccuracy <- postResample(predictRandomForest, testingData$classe)
 estimatedAccuracy
-outOfSampleError <- 1 - as.numeric(confusionMatrix(testingData$classe, predictRf)$overall[1])
+outOfSampleError <- 1 - as.numeric(confusionMatrix(testingData$classe, predictRandomForest)$overall[1])
 outOfSampleError
 ```
-<p style="color:blue;"><b>The estimated accuracy of the model indicates 99.30% and the estimated out-of-sample error indicates 0.69%.</b></p>
+<p style="color:blue;"><b>The estimated accuracy of the model indicates 99.30% and the estimated out-of-sample error indicates 0.67%.</b></p>
 
 ## Predict for Test Data Set
 Apply the model to the testing data set downloaded from the data source. Note: remove the `problem_id` column.  
