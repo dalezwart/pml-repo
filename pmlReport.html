@@ -203,13 +203,13 @@ confusionMatrix(testingData$classe, predictRf)</code></pre>
 ## Detection Rate         0.2841   0.1918   0.1735   0.1614   0.1825
 ## Detection Prevalence   0.2845   0.1935   0.1743   0.1638   0.1839
 ## Balanced Accuracy      0.9980   0.9981   0.9908   0.9929   0.9982</code></pre>
-<pre class="r"><code>accuracy &lt;- postResample(predictRf, testingData$classe)
-accuracy</code></pre>
+<pre class="r"><code>estimatedAccuracy &lt;- postResample(predictRf, testingData$classe)
+estimatedAccuracy</code></pre>
 <pre><code>##  Accuracy     Kappa 
-## 0.9930331 0.9911872</code></pre>
-<pre class="r"><code>oose &lt;- 1 - as.numeric(confusionMatrix(testingData$classe, predictRf)$overall[1])
-oose</code></pre>
-<pre><code>## [1] 0.006966865</code></pre>
+## 0.9933730 0.9916172</code></pre>
+<pre class="r"><code>outOfSampleError &lt;- 1 - as.numeric(confusionMatrix(testingData$classe, predictRf)$overall[1])
+outOfSampleError</code></pre>
+<pre><code>## [1] 0.006627018</code></pre>
 <p style="color:blue;">
 <b>The estimated accuracy of the model indicates 99.30% and the estimated out-of-sample error indicates 0.69%.</b>
 </p>

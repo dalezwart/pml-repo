@@ -100,10 +100,10 @@ predictRf <- predict(testRandomForest, testingData)
 confusionMatrix(testingData$classe, predictRf)
 ```
 ```{r, cache = T}
-accuracy <- postResample(predictRf, testingData$classe)
-accuracy
-oose <- 1 - as.numeric(confusionMatrix(testingData$classe, predictRf)$overall[1])
-oose
+estimatedAccuracy <- postResample(predictRf, testingData$classe)
+estimatedAccuracy
+outOfSampleError <- 1 - as.numeric(confusionMatrix(testingData$classe, predictRf)$overall[1])
+outOfSampleError
 ```
 <p style="color:blue;"><b>The estimated accuracy of the model indicates 99.30% and the estimated out-of-sample error indicates 0.69%.</b></p>
 
